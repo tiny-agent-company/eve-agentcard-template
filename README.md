@@ -12,7 +12,7 @@ export default defineMcpClientConnection({
   url: "https://mcp.agentcard.sh/mcp",
   description:
     "Agentcard: shop and check out at real merchants (DoorDash, Good Eggs, flights) paying with a single-use virtual card. Conversational: call `buy` with the user's request and thread conversation_id on follow-ups.",
-  auth: connect(process.env.AGENTCARD_CONNECTOR ?? "agentcard"),
+  auth: connect(process.env.AGENTCARD_CONNECTOR ?? "mcp.agentcard.sh/agentcard"),
   tools: { allow: ["buy", "get_instructions", "buy_list_merchants", "buy_connect", "buy_connect_status"] },
   approval: once(),
 });

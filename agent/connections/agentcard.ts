@@ -4,7 +4,8 @@ import { once } from "eve/tools/approval";
 
 // AGENTCARD_CONNECTOR is the UID returned by Vercel Connect. For local setup,
 // create a connector with `vercel connect create https://mcp.agentcard.sh/mcp --name agentcard`.
-const agentcardConnector = process.env.AGENTCARD_CONNECTOR ?? "agentcard";
+const agentcardConnector =
+  process.env.AGENTCARD_CONNECTOR ?? "mcp.agentcard.sh/agentcard";
 
 export default defineMcpClientConnection({
   url: "https://mcp.agentcard.sh/mcp",
