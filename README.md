@@ -32,7 +32,7 @@ export default defineMcpClientConnection({
     ],
   },
   approval: ({ toolName }) =>
-    APPROVAL_GATED.some((t) => toolName.endsWith(t)) ? "user-approval" : "not-applicable",
+    APPROVAL_GATED.includes(toolName.split("__").pop() ?? toolName) ? "user-approval" : "not-applicable",
 });
 ```
 
