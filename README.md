@@ -26,6 +26,7 @@ export default defineMcpClientConnection({
       "add_card", "list_added_cards", "remove_added_card", "get_wallet_link",
       // Account
       "whoami", "start_kyc", "get_kyc_status",
+      "submit_kyc_document", "check_kyc_document", "submit_kyc_fields",
       // Human support
       "start_support_chat", "send_support_message", "read_support_chat",
     ],
@@ -38,6 +39,8 @@ export default defineMcpClientConnection({
 Already have an eve agent? Run `eve add connection/agentcard` (see the [eve integration page](https://eve.dev/integrations/agentcard)), or copy that file into `agent/connections/`.
 
 ## Getting Started
+
+You need Node 24 or newer (eve's requirement).
 
 First, link the project and create the Agentcard connector. Agentcard is a [first-party Vercel Connect integration](https://vercel.com/connect/agentcard):
 

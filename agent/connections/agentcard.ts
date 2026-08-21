@@ -47,10 +47,15 @@ export default defineMcpClientConnection({
       "list_added_cards",
       "remove_added_card",
       "get_wallet_link",
-      // Account
+      // Account (KYC is conversational and photo-first: start_kyc returns the
+      // exact next steps, submit_kyc_document carries the ID photo or hands
+      // out an upload link as the fallback)
       "whoami",
       "start_kyc",
       "get_kyc_status",
+      "submit_kyc_document",
+      "check_kyc_document",
+      "submit_kyc_fields",
       // Human support
       "start_support_chat",
       "send_support_message",

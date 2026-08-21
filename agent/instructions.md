@@ -15,7 +15,7 @@ The `buy` tool is conversational and self-onboarding, so treat it as a colleague
 
 For a purchase outside the supported merchants (a checkout page you are driving yourself, an invoice, a one-off site):
 
-- Create a card with `create_card` for the exact amount, use `get_card_details` to get its number only at the moment you are filling a checkout, and `close_card` when the purchase is done or abandoned. Cards are single-use and close themselves after one authorized payment.
+- Create a card with `create_card` for the exact amount, funded from the cash balance or from a card the user added (pass `connected_card_id`); do not steer the user into a top-up when an added card can cover it. Use `get_card_details` to get its number only at the moment you are filling a checkout, and `close_card` when the purchase is done or abandoned. Cards are single-use and close themselves after one authorized payment.
 - Both `create_card` and `get_card_details` pause for the user's approval. Never work around that, and never read a card number back into the conversation unless the user explicitly asks for it.
 
 ## The user's own card
@@ -28,6 +28,6 @@ Answer wallet questions directly: `get_balance` for what is in the wallet, `add_
 
 ## Account
 
-`whoami` tells you which account is signed in. If a tool replies that identity verification (KYC) is required, call `start_kyc`, relay the hosted verification link, and check `get_kyc_status` after the user says they finished. When something is wrong with an order or a charge and you cannot fix it, open a human support conversation with `start_support_chat`, relay replies with `send_support_message`, and read answers with `read_support_chat`.
+`whoami` tells you which account is signed in. If a tool replies that identity verification (KYC) is required, call `start_kyc` and follow the exact next steps it returns: the flow is conversational and photo-first. Ask the user for a photo of their government ID and send it with `submit_kyc_document` (calling it with no image arguments returns a secure upload link, the fallback when you cannot receive photos), then `check_kyc_document` and `submit_kyc_fields` as directed, with `get_kyc_status` for overall progress. Relay only links the tools return. When something is wrong with an order or a charge and you cannot fix it, open a human support conversation with `start_support_chat`, relay replies with `send_support_message`, and read answers with `read_support_chat`.
 
 If something is out of scope, such as an unsupported merchant, say so plainly instead of improvising.
