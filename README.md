@@ -1,31 +1,37 @@
-This is an [Agentcard](https://agentcard.sh) shopping agent template for [eve](https://eve.dev): an agent with a wallet that can shop and check out at real merchants (DoorDash, Good Eggs, flights), paying with a single-use virtual card created at checkout.
+This is an [Agentcard](https://agentcard.sh) agent template for [eve](https://eve.dev): an agent with a wallet. It can shop and check out at real merchants (DoorDash, Good Eggs, flights), pay at any other checkout with a single-use virtual card, take the user's own card, and manage the cash that funds all of it.
 
-The whole integration is one connection file:
+The whole integration is one connection file, `agent/connections/agentcard.ts`:
 
 ```ts
-// agent/connections/agentcard.ts
 import { connect } from "@vercel/connect/eve";
 import { defineMcpClientConnection } from "eve/connections";
-import { once } from "eve/tools/approval";
+
+const APPROVAL_GATED = ["create_card", "get_card_details"];
 
 export default defineMcpClientConnection({
   url: "https://mcp.agentcard.sh/mcp",
   description:
-    "Agentcard: shop and check out at real merchants (DoorDash, Good Eggs, flights) paying with a single-use virtual card, plus the wallet that funds it (balance, top-ups, transactions). Conversational: call `buy` with the user's request and thread conversation_id on follow-ups.",
+    "Agentcard: the agent's wallet. Shop and check out at real merchants (DoorDash, Good Eggs, flights) with the conversational `buy` tool (thread conversation_id on follow-ups), issue a single-use virtual card to pay at any checkout, let the user add their own card, and manage the cash that funds it: balance, top-ups, transactions, KYC, human support.",
   auth: connect(process.env.AGENTCARD_CONNECTOR ?? "mcp.agentcard.sh/agentcard"),
   tools: {
     allow: [
-      "buy",
-      "get_instructions",
-      "buy_list_merchants",
-      "buy_connect",
-      "buy_connect_status",
-      "get_balance",
-      "add_funds",
-      "list_transactions",
+      // Shopping
+      "buy", "get_instructions", "buy_list_merchants", "buy_connect",
+      "buy_connect_status", "buy_unlink_merchant", "manage_subscription",
+      // Cash
+      "get_balance", "add_funds", "list_transactions",
+      // Issued cards: pay at any checkout
+      "create_card", "get_card_details", "get_card_balance", "list_cards", "close_card",
+      // The user's own card, no prefunding or KYC
+      "add_card", "list_added_cards", "remove_added_card", "get_wallet_link",
+      // Account
+      "whoami", "start_kyc", "get_kyc_status",
+      // Human support
+      "start_support_chat", "send_support_message", "read_support_chat",
     ],
   },
-  approval: once(),
+  approval: ({ toolName }) =>
+    APPROVAL_GATED.some((t) => toolName.endsWith(t)) ? "user-approval" : "not-applicable",
 });
 ```
 
@@ -60,11 +66,12 @@ You can start editing the agent by modifying `agent/agent.ts`. Its behavior is d
 
 ## How it works
 
-- **One conversational tool.** `buy` handles search, cart, confirmation, and payment on the server. The agent passes the user's words through and threads `conversation_id` on follow-ups. There is no cart state to manage in your agent.
-- **The wallet comes along.** `get_balance`, `add_funds`, and `list_transactions` cover the money questions around shopping: what is in the wallet, topping it up (a payment link the user opens themselves), and what was spent. If a checkout is short on funds, `buy` hands back a funding link on its own.
-- **Checkout is consent-gated server-side.** A purchase only executes after the user explicitly confirms the shown total inside the conversation. This is enforced by Agentcard's API, not by prompt.
-- **Single-use cards.** Each checkout pays with a virtual card created for that purchase and closed after it, so no long-lived card credential exists anywhere in the loop.
-- **Defense in depth.** The connection allows only the shopping and wallet tools, keeping card credentials and card management out of the agent's reach, and adds a `once()` approval gate so a human approves before the first Agentcard call in a session. Drop the `tools` filter for the full account surface.
+- **Shopping is one conversational tool.** `buy` handles search, cart, confirmation, and payment on the server. The agent passes the user's words through and threads `conversation_id` on follow-ups. There is no cart state to manage in your agent.
+- **Paying anywhere else is a card away.** For checkouts the agent drives itself, `create_card` issues a single-use virtual card for the exact amount and `get_card_details` reveals it at fill time. Both pause for the user's approval (the eve approval policy above), and cards close themselves after one authorized payment.
+- **Users can bring their own card.** `add_card` runs a hosted enrollment for the user's Visa or Mastercard, so there is nothing to prefund and no KYC.
+- **The wallet comes along.** `get_balance`, `add_funds`, and `list_transactions` cover the money questions: what is in the wallet, topping it up (a payment link the user opens themselves), and what was spent. If a checkout is short on funds, `buy` hands back a funding link on its own.
+- **Checkout is consent-gated server-side.** A `buy` purchase only executes after the user explicitly confirms the shown total inside the conversation. This is enforced by Agentcard's API, not by prompt.
+- **The footguns stay out.** The filter excludes `approve_request` (an agent must never satisfy an approval meant for the human), `revoke_connection`, plan and settings writes, and withdrawals. Drop the `tools` filter for the complete account surface.
 
 Agentcard's own production buy agent runs on eve too, so this is the integration path we use ourselves.
 
