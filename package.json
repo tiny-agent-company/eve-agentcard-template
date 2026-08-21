@@ -2,6 +2,9 @@
   "name": "eve-agentcard-template",
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "imports": {
     "#*": "./agent/*",
     "#evals/*": "./evals/*"
