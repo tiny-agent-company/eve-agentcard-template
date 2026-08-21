@@ -7,10 +7,12 @@ import { defineMcpClientConnection } from "eve/connections";
 const agentcardConnector =
   process.env.AGENTCARD_CONNECTOR ?? "mcp.agentcard.sh/agentcard";
 
-// The two calls where money or card credentials move into the agent's hands.
-// Everything else runs without a prompt; checkout consent is enforced
-// server-side inside the `buy` conversation regardless.
-const APPROVAL_GATED = ["create_card", "get_card_details"];
+// The calls where money or card credentials move into the agent's hands, plus
+// the one that unenrolls the user's own card (removal is cheap to call and
+// expensive to undo: re-adding a card repeats the hosted ceremony). Everything
+// else runs without a prompt; checkout consent is enforced server-side inside
+// the `buy` conversation regardless.
+const APPROVAL_GATED = ["create_card", "get_card_details", "remove_added_card"];
 
 export default defineMcpClientConnection({
   url: "https://mcp.agentcard.sh/mcp",

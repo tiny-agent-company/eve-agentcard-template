@@ -6,7 +6,7 @@ The whole integration is one connection file, `agent/connections/agentcard.ts`:
 import { connect } from "@vercel/connect/eve";
 import { defineMcpClientConnection } from "eve/connections";
 
-const APPROVAL_GATED = ["create_card", "get_card_details"];
+const APPROVAL_GATED = ["create_card", "get_card_details", "remove_added_card"];
 
 export default defineMcpClientConnection({
   url: "https://mcp.agentcard.sh/mcp",
@@ -71,7 +71,7 @@ You can start editing the agent by modifying `agent/agent.ts`. Its behavior is d
 
 - **Shopping is one conversational tool.** `buy` handles search, cart, confirmation, and payment on the server. The agent passes the user's words through and threads `conversation_id` on follow-ups. There is no cart state to manage in your agent.
 - **Paying anywhere else is a card away.** For checkouts the agent drives itself, `create_card` issues a single-use virtual card for the exact amount and `get_card_details` reveals it at fill time. Both pause for the user's approval (the eve approval policy above), and cards close themselves after one authorized payment.
-- **Users can bring their own card.** `add_card` runs a hosted enrollment for the user's Visa or Mastercard, so there is nothing to prefund and no KYC.
+- **Users can bring their own card.** `add_card` runs a hosted enrollment for the user's Visa or Mastercard, so there is nothing to prefund and no KYC. Unenrolling (`remove_added_card`) pauses for the user's approval, since re-adding repeats the ceremony.
 - **The wallet comes along.** `get_balance`, `add_funds`, and `list_transactions` cover the money questions: what is in the wallet, topping it up (a payment link the user opens themselves), and what was spent. If a checkout is short on funds, `buy` hands back a funding link on its own.
 - **Checkout is consent-gated server-side.** A `buy` purchase only executes after the user explicitly confirms the shown total inside the conversation. This is enforced by Agentcard's API, not by prompt.
 - **The footguns stay out.** The filter excludes `approve_request` (an agent must never satisfy an approval meant for the human), `revoke_connection`, plan and settings writes, and withdrawals. Drop the `tools` filter for the complete account surface.

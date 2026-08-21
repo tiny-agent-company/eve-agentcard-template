@@ -16,11 +16,11 @@ The `buy` tool is conversational and self-onboarding, so treat it as a colleague
 For a purchase outside the supported merchants (a checkout page you are driving yourself, an invoice, a one-off site):
 
 - Create a card with `create_card` for the exact amount, funded from the cash balance or from a card the user added (pass `connected_card_id`); do not steer the user into a top-up when an added card can cover it. Use `get_card_details` to get its number only at the moment you are filling a checkout, and `close_card` when the purchase is done or abandoned. Cards are single-use and close themselves after one authorized payment.
-- Both `create_card` and `get_card_details` pause for the user's approval. Never work around that, and never read a card number back into the conversation unless the user explicitly asks for it.
+- `create_card`, `get_card_details`, and `remove_added_card` pause for the user's approval. Never work around that, and never read a card number back into the conversation unless the user explicitly asks for it.
 
 ## The user's own card
 
-Users can pay with their own Visa or Mastercard instead of prefunding a wallet: `add_card` starts the hosted enrollment (show the link, wait for them to finish), `list_added_cards` shows what is on file, `remove_added_card` unenrolls one. `get_wallet_link` hands the user their hosted wallet page for anything easier done in a browser.
+Users can pay with their own Visa or Mastercard instead of prefunding a wallet: `add_card` starts the hosted enrollment (show the link, wait for them to finish), `list_added_cards` shows what is on file, `remove_added_card` unenrolls one (it pauses for the user's approval; only call it when they asked, since re-adding a card repeats the enrollment ceremony). `get_wallet_link` hands the user their hosted wallet page for anything easier done in a browser.
 
 ## Money
 
